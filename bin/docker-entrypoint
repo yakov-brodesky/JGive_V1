@@ -4,15 +4,12 @@
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   ./bin/rails db:prepare
   ./bin/rails runner "
-    configs = { queue: 'solid_queue_recurring_tasks', cache: 'solid_cache_entries' }
-    configs.each do |db, table|
-      ActiveRecord::Base.establish_connection(db)
-      next if ActiveRecord::Base.connection.table_exists?(table)
-
-      schema = Rails.root.join(\"db/\#{db}_schema.rb\")
-      load(schema) if schema.exist?
+    unless ActiveRecord::Base.connection.table_exists?('solid_queue_recurring_tasks')
+      system({ 'DISABLE_DATABASE_ENVIRONMENT_CHECK' => '1' }, './bin/rails', 'db:schema:load:queue') or exit(1)
     end
-    ActiveRecord::Base.establish_connection(:primary)
+    unless ActiveRecord::Base.connection.table_exists?('solid_cache_entries')
+      system({ 'DISABLE_DATABASE_ENVIRONMENT_CHECK' => '1' }, './bin/rails', 'db:schema:load:cache') or exit(1)
+    end
   "
 fi
 
