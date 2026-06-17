@@ -47,6 +47,9 @@ RUN bundle install && \
 # Copy application code
 COPY . .
 
+# Windows checkouts don't preserve execute bits on binstubs.
+RUN chmod +x bin/*
+
 # Precompile bootsnap code for faster boot times.
 # -j 1 disable parallel compilation to avoid a QEMU bug: https://github.com/rails/bootsnap/issues/495
 RUN bundle exec bootsnap precompile -j 1 app/ lib/
