@@ -1,0 +1,298 @@
+<% content_for :title, @campaign.title %>
+
+<header class="jgive-header">
+  <div class="page-shell jgive-header__inner">
+    <%= link_to "Jgive", campaigns_path, class: "jgive-logo" %>
+    <nav class="jgive-header__nav" aria-label="ניווט ראשי">
+      <a href="#">פתרונות</a>
+      <a href="#">מוצרים</a>
+      <a href="#">עלינו</a>
+      <a href="#">חיפוש</a>
+      <a href="#">תמיכה</a>
+      <span>HE | ILS</span>
+      <button class="jgive-header__donate" type="button" data-action="donation-modal#open">לתרומה</button>
+      <a href="#">התחברות</a>
+    </nav>
+  </div>
+</header>
+
+<main class="campaign-page" data-controller="donation-modal" data-donation-modal-open-value="<%= @donation.errors.any? %>">
+  <% if notice.present? %>
+    <div class="page-shell">
+      <div class="flash flash--notice"><%= notice %></div>
+    </div>
+  <% end %>
+
+  <section class="campaign-hero" aria-label="תמונת הקמפיין">
+    <div class="campaign-hero__image" style="background-image: url('<%= @campaign.cover_image_url %>')">
+      <div class="campaign-hero__logo campaign-hero__logo--right">
+        <span>הגן הכתום</span>
+        <small>לזכרם, למען כולנו</small>
+      </div>
+      <div class="campaign-hero__play" aria-hidden="true"></div>
+      <div class="campaign-hero__logo campaign-hero__logo--left">
+        <span><%= @campaign.organization.name %></span>
+        <small>מקימה את הגן הכתום</small>
+      </div>
+      <h1 class="campaign-hero__caption"><%= @campaign.subtitle %></h1>
+    </div>
+  </section>
+
+  <section class="campaign-progress-band">
+    <div class="page-shell">
+      <div class="campaign-progress-band__top">
+        <span><%= format_progress(@campaign) %> גויסו</span>
+        <strong><%= format_ils(@campaign.raised_amount_cents) %></strong>
+      </div>
+
+      <div class="jgive-progress" aria-label="התקדמות הקמפיין">
+        <div class="jgive-progress__raised" style="width: <%= [ @campaign.progress_percentage, 100 ].min %>%"></div>
+        <div class="jgive-progress__heart" style="inset-inline-start: <%= [ @campaign.progress_percentage, 100 ].min %>%"></div>
+      </div>
+
+      <div class="campaign-progress-band__stats">
+        <span>יעד בונוס: <strong><%= format_ils(@campaign.goal_amount_cents * 2.5) %></strong></span>
+        <span>יעד: <strong><%= format_ils(@campaign.goal_amount_cents) %></strong></span>
+        <span>מספר תורמים: <strong><%= number_with_delimiter(@campaign.total_donor_count) %></strong></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="page-shell campaign-summary">
+    <aside class="campaign-actions">
+      <div class="cta-card">
+        <button class="btn btn--bit" type="button" data-action="donation-modal#open">bit</button>
+        <button class="btn btn--primary btn--donate" type="button" data-action="donation-modal#open">לתרומה</button>
+        <a class="btn btn--outline" href="#ambassadors">הצטרפו כשגרירים לקמפיין</a>
+      </div>
+
+      <div class="share-card share-card--flat" aria-label="שיתוף הקמפיין">
+        <p>תרומה מוכרת לזיכוי מס:</p>
+        <div class="share-card__flags">
+          <span>ישראל</span>
+          <span>ארה"ב</span>
+          <span>קנדה</span>
+          <span>אנגליה</span>
+        </div>
+        <div class="share-card__links">
+          <a href="#">Facebook</a>
+          <a href="#">WhatsApp</a>
+          <a href="#">X</a>
+          <a href="#">העתקת קישור</a>
+        </div>
+      </div>
+    </aside>
+
+    <div class="campaign-heading">
+      <div>
+        <h1><%= @campaign.title %></h1>
+        <p><%= @campaign.subtitle %></p>
+      </div>
+    </div>
+  </section>
+
+  <nav class="page-shell campaign-tabs" aria-label="תוכן הקמפיין">
+    <a href="#project">על הפרויקט</a>
+    <a href="#recent-donations">תרומות אחרונות</a>
+    <a href="#ambassadors">לוח שגרירים</a>
+    <a href="#groups">קבוצות</a>
+    <a href="#organization">על העמותה</a>
+    <a href="#updates">עדכונים</a>
+  </nav>
+
+  <div class="page-shell campaign-content">
+    <article>
+      <section id="project" class="content-section project-story">
+        <p class="eyebrow">על הפרויקט</p>
+        <h2>הצטרפו עכשיו והיו ממקימי ׳הגן הכתום׳</h2>
+        <h3>לזכר שירי, אריאל וכפיר ביבס,<br>ולזכר כל ילדי ה-7 באוקטובר.</h3>
+
+        <p>
+          אחרי תקופה ארוכה של כאב, טלטלה והתמודדות, מגיע מיזם שמביא בשורה חדשה לישראל -
+          מקום של חיים, ריפוי ותקווה.
+        </p>
+        <p>
+          אנחנו יוצאים לדרך עם הקמת הגן הכתום, מרחב ראשון מסוגו בישראל שמחבר זיכרון,
+          טבע, ילדים וריפוי.
+        </p>
+        <p>
+          על פני 20 דונם יוקם מרחב חי של טבע, מים, משחק, משפחה וריפוי - פתוח לכולם.
+        </p>
+
+        <div class="before-after" aria-label="הדמיית לפני ואחרי">
+          <div class="before-after__panel before-after__panel--after">
+            <span>אחרי</span>
+          </div>
+          <div class="before-after__panel before-after__panel--before">
+            <span>לפני</span>
+          </div>
+        </div>
+
+        <h3>מה יחכה לנו בגן הכתום?</h3>
+        <p>
+          הגן הכתום מוקם במגדל העמק, סמוך לגני הילדים "אריאל" ו"כפיר" הנבנים בימים אלה.
+          זהו מרחב חדשני וראשון מסוגו בישראל, שישלב בין טבע, משחק, ריפוי וזיכרון.
+        </p>
+        <p>
+          כל תרומה מקרבת עוד שביל, עוד עץ ועוד פינה משפחתית שתאפשר לילדים ומשפחות להגיע,
+          לנשום, להתחבר ולזכור דרך חיים, אור ותקווה.
+        </p>
+
+        <ul class="feature-list">
+          <li><strong>מתחם גינון טיפולי-קהילתי</strong> עבור הלומי קרב, בני הגיל השלישי, אנשים עם צרכים מיוחדים ונוער בסיכון.</li>
+          <li><strong>בוסתני פרי ומטעים</strong> בהשראת הפירות ששירי ואריאל אהבו.</li>
+          <li><strong>נחל אקולוגי</strong> עם מים חיים, גשרי עץ וחוויית הליכה מרגיעה.</li>
+          <li><strong>מרחב זיכרון לילדי השבעה באוקטובר</strong> שמזמין לזכור דרך אור, טבע ואהבה.</li>
+        </ul>
+
+        <h3>זהו פרויקט לאומי של אהבה, אחריות ותקווה.</h3>
+        <p>
+          הפרויקט הוא יוזמה של עמותת ונטעת, בשיתוף משפחת ביבס, עיריית מגדל העמק
+          ובתכנון אדריכלי נוף. השטח כבר מחכה, התוכניות מוכנות, ועכשיו זה תלוי בנו.
+        </p>
+
+        <figure class="story-map">
+          <img src="https://images.unsplash.com/photo-1577086664693-894d8405334a?auto=format&fit=crop&w=1200&q=80" alt="מפה ותכנון רעיוני של הגן">
+          <figcaption>מפת השראה ותכנון רעיוני למרחב הגן</figcaption>
+        </figure>
+
+        <h3>למען כל ילדי ישראל. למען התיקון של כולנו.</h3>
+        <p>
+          כדי שהגן יממש את מלוא הפוטנציאל שלו, אנחנו זקוקים לכם. כל תרומה תומכת ישירות
+          בהקמת הגן: כל עץ, כל שביל וכל פינה שתוקם יקרו בזכות השותפים לקמפיין.
+        </p>
+
+        <div class="story-gallery">
+          <figure>
+            <img src="https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=900&q=80" alt="משפחה עם ילדים בטבע">
+            <figcaption>מרחב משפחתי, ירוק ומזמין</figcaption>
+          </figure>
+          <figure>
+            <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=900&q=80" alt="קהילה מתכנסת יחד">
+            <figcaption>קהילה שבונה מקום של תקווה</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section id="recent-donations" class="content-section recent-donations" data-controller="donation-filter">
+        <h2>תרומות אחרונות</h2>
+
+        <%= form_with url: campaign_path(@campaign, anchor: "recent-donations"), method: :get, class: "tab-tools", data: { action: "submit->donation-filter#preventSubmit" } do |form| %>
+          <div class="tab-tools__field">
+            <%= form.label :q, "חיפוש" %>
+            <%= form.search_field :q,
+                  value: @donation_search,
+                  placeholder: "חיפוש לפי שם, אימייל או הקדשה",
+                  autocomplete: "off",
+                  data: { donation_filter_target: "query", action: "input->donation-filter#filter" } %>
+          </div>
+
+          <div class="tab-tools__field tab-tools__field--select">
+            <%= form.label :sort, "סנן לפי" %>
+            <%= form.select :sort,
+                  options_for_select([ [ "הכי עדכני", "newest" ], [ "סכום התרומה", "amount" ] ], @donation_sort),
+                  {},
+                  data: { donation_filter_target: "sort", action: "change->donation-filter#filter" } %>
+          </div>
+
+          <span class="tab-tools__live-hint">התוצאות מתעדכנות תוך כדי הקלדה</span>
+        <% end %>
+
+        <% if @recent_donations.any? %>
+          <div class="donor-grid" data-donation-filter-target="grid">
+            <%= render @recent_donations %>
+          </div>
+          <div class="empty-panel empty-panel--filtered" data-donation-filter-target="empty" hidden>
+            <p>לא נמצאו תרומות שתואמות לחיפוש.</p>
+          </div>
+          <button class="load-more" type="button">טען עוד</button>
+        <% else %>
+          <div class="empty-panel">
+            <p>לא נמצאו תרומות שתואמות לחיפוש.</p>
+            <%= link_to "ניקוי חיפוש", campaign_path(@campaign, anchor: "recent-donations") %>
+          </div>
+        <% end %>
+      </section>
+
+      <section id="ambassadors" class="content-section directory-section">
+        <h2>שגרירים</h2>
+        <div class="tab-tools tab-tools--single">
+          <div class="tab-tools__field">
+            <label for="ambassador-search">חיפוש</label>
+            <input id="ambassador-search" type="search" placeholder="חיפוש שגריר">
+          </div>
+        </div>
+        <div class="empty-panel">
+          <p>אין עדיין שגרירים פעילים לקמפיין הזה.</p>
+        </div>
+      </section>
+
+      <section id="groups" class="content-section directory-section">
+        <h2>קבוצות</h2>
+        <div class="tab-tools tab-tools--single">
+          <div class="tab-tools__field">
+            <label for="group-search">חיפוש</label>
+            <input id="group-search" type="search" placeholder="חיפוש קבוצה">
+          </div>
+        </div>
+        <div class="empty-panel">
+          <p>אין עדיין קבוצות לקמפיין הזה.</p>
+        </div>
+      </section>
+
+      <section id="organization" class="content-section organization-card">
+        <h2>על העמותה</h2>
+        <p><strong><%= @campaign.organization.name %></strong> היא תנועה לאומית-סביבתית לריפוי החברה הישראלית דרך הטבע וחיבור לאדמה.</p>
+        <p>
+          <% [ @campaign.organization.category, @campaign.organization.city ].compact_blank.each do |bit| %>
+            <span><%= bit %></span>
+          <% end %>
+        </p>
+        <% if @campaign.organization.website.present? %>
+          <%= link_to @campaign.organization.website, @campaign.organization.website, target: "_blank", rel: "noopener" %>
+        <% end %>
+      </section>
+
+      <section id="updates" class="content-section directory-section">
+        <h2>עדכונים</h2>
+        <div class="empty-panel">
+          <p>עדיין לא פורסמו עדכונים לקמפיין.</p>
+        </div>
+      </section>
+    </article>
+  </div>
+
+  <div class="donation-dialog" role="dialog" aria-modal="true" aria-label="טופס תרומה" data-donation-modal-target="modal" data-action="click->donation-modal#closeOnBackdrop" hidden>
+    <div class="donation-dialog__content">
+      <button class="donation-dialog__close" type="button" aria-label="סגירת טופס התרומה" data-action="donation-modal#close">×</button>
+      <%= render "donation_form", campaign: @campaign, donation: @donation %>
+    </div>
+  </div>
+
+  <footer class="jgive-footer">
+    <div class="page-shell jgive-footer__grid">
+      <div>
+        <strong>Jgive</strong>
+        <p>פלטפורמה חברתית לתרומות אונליין.</p>
+      </div>
+      <div>
+        <h3>עלינו</h3>
+        <a href="#">הסיפור שלנו</a>
+        <a href="#">מחקר ודאטה</a>
+        <a href="#">אבטחת מידע</a>
+      </div>
+      <div>
+        <h3>מוצרים</h3>
+        <a href="#">Jgive PRO</a>
+        <a href="#">GiveCard</a>
+        <a href="#">תרומת מניות</a>
+      </div>
+      <div>
+        <h3>תמיכה</h3>
+        <a href="#">צור קשר</a>
+        <a href="#">עמלות</a>
+        <a href="#">הצהרת נגישות</a>
+      </div>
+    </div>
+  </footer>
+</main>

@@ -1,0 +1,116 @@
+#!/usr/bin/env bash
+# Provision AWS infrastructure for JGive Kamal deployment.
+# Requires: AWS CLI configured (aws configure), bash, openssl optional.
+# Outputs connection details to .aws-deploy.env (gitignored).
+
+set -euo pipefail
+
+REGION="${AWS_REGION:-eu-west-1}"
+ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+SERVICE="jgive"
+VPC_ID=$(aws ec2 describe-vpcs --filters "Name=isDefault,Values=true" --query "Vpcs[0].VpcId" --output text --region "$REGION")
+SUBNET_IDS=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=$VPC_ID" --query "Subnets[*].SubnetId" --output text --region "$REGION")
+
+echo "Region: $REGION | Account: $ACCOUNT_ID | VPC: $VPC_ID"
+
+aws ecr create-repository --repository-name "$SERVICE" --region "$REGION" \
+  --image-scanning-configuration scanOnPush=true 2>/dev/null || true
+
+WEB_SG=$(aws ec2 describe-security-groups --region "$REGION" \
+  --filters "Name=group-name,Values=${SERVICE}-web-sg" --query "SecurityGroups[0].GroupId" --output text 2>/dev/null || echo "None")
+if [ "$WEB_SG" = "None" ] || [ -z "$WEB_SG" ]; then
+  WEB_SG=$(aws ec2 create-security-group --group-name "${SERVICE}-web-sg" \
+    --description "JGive web server" --vpc-id "$VPC_ID" --region "$REGION" --query GroupId --output text)
+  aws ec2 authorize-security-group-ingress --region "$REGION" --group-id "$WEB_SG" --protocol tcp --port 80 --cidr 0.0.0.0/0 || true
+  aws ec2 authorize-security-group-ingress --region "$REGION" --group-id "$WEB_SG" --protocol tcp --port 443 --cidr 0.0.0.0/0 || true
+  aws ec2 authorize-security-group-ingress --region "$REGION" --group-id "$WEB_SG" --protocol tcp --port 22 --cidr 0.0.0.0/0 || true
+fi
+
+DB_SG=$(aws ec2 describe-security-groups --region "$REGION" \
+  --filters "Name=group-name,Values=${SERVICE}-db-sg" --query "SecurityGroups[0].GroupId" --output text 2>/dev/null || echo "None")
+if [ "$DB_SG" = "None" ] || [ -z "$DB_SG" ]; then
+  DB_SG=$(aws ec2 create-security-group --group-name "${SERVICE}-db-sg" \
+    --description "JGive RDS PostgreSQL" --vpc-id "$VPC_ID" --region "$REGION" --query GroupId --output text)
+  aws ec2 authorize-security-group-ingress --region "$REGION" --group-id "$DB_SG" --protocol tcp --port 5432 --source-group "$WEB_SG" || true
+fi
+
+KEY_PATH=".ssh/${SERVICE}-deploy.pem"
+mkdir -p .ssh
+if ! aws ec2 describe-key-pairs --key-names "${SERVICE}-deploy" --region "$REGION" &>/dev/null; then
+  aws ec2 create-key-pair --key-name "${SERVICE}-deploy" --region "$REGION" \
+    --query KeyMaterial --output text > "$KEY_PATH"
+  chmod 600 "$KEY_PATH"
+fi
+
+aws rds create-db-subnet-group --db-subnet-group-name "${SERVICE}-db-subnet" \
+  --db-subnet-group-description "JGive RDS subnets" --subnet-ids $SUBNET_IDS --region "$REGION" 2>/dev/null || true
+
+DB_PASSWORD="${DB_PASSWORD:-$(openssl rand -base64 24 | tr -dc 'A-Za-z0-9' | head -c 24)}"
+if ! aws rds describe-db-instances --db-instance-identifier "${SERVICE}-production" --region "$REGION" &>/dev/null; then
+  aws rds create-db-instance \
+    --db-instance-identifier "${SERVICE}-production" \
+    --db-instance-class db.t4g.micro \
+    --engine postgres --engine-version 16 \
+    --master-username postgres --master-user-password "$DB_PASSWORD" \
+    --allocated-storage 20 --db-name jgive_production \
+    --vpc-security-group-ids "$DB_SG" --db-subnet-group-name "${SERVICE}-db-subnet" \
+    --no-publicly-accessible --backup-retention-period 1 --region "$REGION"
+fi
+
+AMI=$(aws ec2 describe-images --owners 099720109477 --region "$REGION" \
+  --filters "Name=name,Values=ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-*" \
+  --query "sort_by(Images, &CreationDate)[-1].ImageId" --output text)
+
+INSTANCE_ID=$(aws ec2 describe-instances --region "$REGION" \
+  --filters "Name=tag:Project,Values=$SERVICE" "Name=instance-state-name,Values=running,pending" \
+  --query "Reservations[0].Instances[0].InstanceId" --output text 2>/dev/null || echo "None")
+
+if [ "$INSTANCE_ID" = "None" ] || [ -z "$INSTANCE_ID" ]; then
+  INSTANCE_ID=$(aws ec2 run-instances --image-id "$AMI" --instance-type t3.small \
+    --key-name "${SERVICE}-deploy" --security-group-ids "$WEB_SG" \
+    --block-device-mappings "DeviceName=/dev/sda1,Ebs={VolumeSize=30,VolumeType=gp3}" \
+    --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=${SERVICE}-web},{Key=Project,Value=$SERVICE}]" \
+    --region "$REGION" --query "Instances[0].InstanceId" --output text)
+fi
+
+aws ec2 wait instance-running --instance-ids "$INSTANCE_ID" --region "$REGION"
+
+ELASTIC_IP=$(aws ec2 describe-addresses --region "$REGION" \
+  --filters "Name=instance-id,Values=$INSTANCE_ID" --query "Addresses[0].PublicIp" --output text 2>/dev/null || echo "None")
+if [ "$ELASTIC_IP" = "None" ] || [ -z "$ELASTIC_IP" ]; then
+  ALLOC_ID=$(aws ec2 allocate-address --domain vpc --region "$REGION" --query AllocationId --output text)
+  ELASTIC_IP=$(aws ec2 associate-address --instance-id "$INSTANCE_ID" --allocation-id "$ALLOC_ID" \
+    --region "$REGION" --query PublicIp --output text)
+fi
+
+echo "Waiting for RDS (may take several minutes)..."
+aws rds wait db-instance-available --db-instance-identifier "${SERVICE}-production" --region "$REGION"
+DB_ENDPOINT=$(aws rds describe-db-instances --db-instance-identifier "${SERVICE}-production" --region "$REGION" \
+  --query "DBInstances[0].Endpoint.Address" --output text)
+
+DATABASE_URL="postgres://postgres:${DB_PASSWORD}@${DB_ENDPOINT}:5432/jgive_production"
+
+cat > .aws-deploy.env <<EOF
+AWS_REGION=$REGION
+AWS_ACCOUNT_ID=$ACCOUNT_ID
+ECR_REGISTRY=${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com
+ECR_REPOSITORY=$SERVICE
+WEB_SECURITY_GROUP=$WEB_SG
+DB_SECURITY_GROUP=$DB_SG
+SSH_KEY_PATH=$KEY_PATH
+INSTANCE_ID=$INSTANCE_ID
+ELASTIC_IP=$ELASTIC_IP
+DB_ENDPOINT=$DB_ENDPOINT
+DATABASE_URL=$DATABASE_URL
+EOF
+
+echo ""
+echo "Provisioned. Details written to .aws-deploy.env"
+echo "Elastic IP: $ELASTIC_IP"
+echo "RDS endpoint: $DB_ENDPOINT"
+echo ""
+echo "Next:"
+echo "  export DATABASE_URL=\"$DATABASE_URL\""
+echo "  bin/kamal setup"
+echo "  bin/kamal deploy"
+echo "  bin/kamal app exec 'bin/rails db:seed'"

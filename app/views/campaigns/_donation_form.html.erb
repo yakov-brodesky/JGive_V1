@@ -1,0 +1,129 @@
+<section class="donation-panel" aria-label="טופס תרומה" data-controller="donation-form">
+  <div class="donation-panel__head">
+    <span>תשלום מאובטח</span>
+    <strong>פרטי התרומה שלי</strong>
+  </div>
+
+<%= form_with model: [ campaign, donation ], class: "donation-form" do |form| %>
+  <% if donation.errors.any? %>
+    <div class="flash flash--error">
+      <p>לא ניתן לשמור את התרומה:</p>
+      <ul>
+        <% donation.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="donation-form__body">
+    <fieldset class="segmented-control">
+      <legend>סוג התרומה</legend>
+      <%= form.radio_button :recurrence, "one_time", checked: donation.recurrence.blank? || donation.one_time?, id: "donation_recurrence_one_time" %>
+      <%= form.label :recurrence_one_time, "תרומה חד-פעמית", for: "donation_recurrence_one_time" %>
+
+      <%= form.radio_button :recurrence, "monthly", id: "donation_recurrence_monthly" %>
+      <%= form.label :recurrence_monthly, "הוראת קבע", for: "donation_recurrence_monthly" %>
+    </fieldset>
+
+    <fieldset class="amount-grid">
+      <legend>בחרו סכום</legend>
+      <% donation_amount_options.each_with_index do |(amount, description), index| %>
+        <% field_id = "donation_amount_#{amount}" %>
+        <div class="amount-option">
+          <%= form.radio_button :amount, amount, checked: index == 2 && donation.amount_cents.blank?, id: field_id %>
+          <%= form.label :amount, for: field_id do %>
+            <strong><%= format_ils(amount * 100) %></strong>
+            <span><%= description %></span>
+            <% if amount == 360 %>
+              <em>הכי נבחר</em>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    </fieldset>
+
+    <div class="field field--custom-amount">
+      <%= label_tag "donation_custom_amount", "סכום אחר" %>
+      <%= number_field_tag "donation[custom_amount]",
+            nil,
+            id: "donation_custom_amount",
+            min: 1,
+            step: 1,
+            placeholder: "סכום בשקלים" %>
+    </div>
+
+    <div class="form-toggle-row">
+      <%= check_box_tag "donation[add_note]", "1", donation.note.present?, id: "donation_add_note", data: { donation_form_target: "noteCheckbox", action: "change->donation-form#toggleNote" } %>
+      <%= label_tag "donation_add_note", "רוצה להוסיף הערה?" %>
+    </div>
+
+    <div class="field field--note" data-donation-form-target="notePanel" hidden>
+      <%= form.label :note, "הערה לקמפיין" %>
+      <%= form.text_area :note, rows: 3, placeholder: "הערה זאת תוצג בקמפיין..." %>
+    </div>
+
+    <div class="form-toggle-row form-toggle-row--switch">
+      <%= check_box_tag "donation[dedication_enabled]", "1", donation.dedication_message.present?, id: "donation_dedication_enabled", class: "toggle-switch__input", data: { donation_form_target: "dedicationToggle", action: "change->donation-form#toggleDedication" } %>
+      <label class="form-toggle-row__label" for="donation_dedication_enabled">הקדשת תרומה</label>
+      <label class="toggle-switch" for="donation_dedication_enabled" aria-hidden="true">
+        <span class="toggle-switch__visual"></span>
+      </label>
+    </div>
+
+    <div class="dedication-panel" data-donation-form-target="dedicationPanel" hidden>
+      <fieldset class="dedication-type">
+        <legend>סוג ההקדשה: <span class="required">*</span></legend>
+        <%= radio_button_tag "donation[dedication_type]", "honor", true, id: "donation_dedication_type_honor", data: { action: "change->donation-form#updateDedicationType" } %>
+        <%= label_tag "donation_dedication_type_honor", "לכבוד" %>
+
+        <%= radio_button_tag "donation[dedication_type]", "memory", false, id: "donation_dedication_type_memory", data: { donation_form_target: "memoryRadio", action: "change->donation-form#updateDedicationType" } %>
+        <%= label_tag "donation_dedication_type_memory", "לזכר" %>
+      </fieldset>
+
+      <div class="field">
+        <%= label_tag "donation_dedication_honoree", nil, data: { donation_form_target: "honoreeLabel" } do %>
+          לכבוד מי ההקדשה <span class="required">*</span>
+        <% end %>
+        <%= text_field_tag "donation[dedication_honoree]", nil, placeholder: "לכבוד מי ההקדשה", data: { donation_form_target: "honoreeField" } %>
+      </div>
+
+      <div class="field">
+        <%= label_tag "donation_dedication_recipient_email", "אימייל לשליחה" %>
+        <span class="required">*</span>
+        <%= email_field_tag "donation[dedication_recipient_email]", nil, placeholder: "you@example.com" %>
+      </div>
+
+      <div class="field">
+        <%= form.label :dedication_message, "הודעה אישית" %>
+        <%= form.text_area :dedication_message, rows: 3, placeholder: "הודעה אישית" %>
+      </div>
+    </div>
+
+    <div class="field">
+      <%= form.label :display_preference, "אני רוצה שבעמוד הפרויקט יופיע:" %>
+      <%= form.select :display_preference, display_preference_options, {} %>
+    </div>
+
+    <div class="field">
+      <%= form.label :donor_email, "אימייל לקבלת אישור" %>
+      <%= form.email_field :donor_email, required: true, placeholder: "you@example.com" %>
+    </div>
+
+    <div class="field">
+      <%= form.label :donor_name, "שם מלא" %>
+      <%= form.text_field :donor_name, placeholder: "השם שלך" %>
+      <small class="field__hint">לא נדרש בתרומה אנונימית.</small>
+    </div>
+  </div>
+
+  <div class="donation-form__footer">
+    <div class="donation-panel__total">
+      <span>סכום התרומה שלך</span>
+      <strong>ייבחר בטופס</strong>
+    </div>
+
+    <%= form.submit "המשך", class: "btn btn--primary btn--donate" %>
+  </div>
+<% end %>
+</section>

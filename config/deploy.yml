@@ -1,0 +1,47 @@
+# Kamal deployment config for AWS (EC2 + ECR + RDS).
+# See README "Production deploy" and bin/provision-aws for infrastructure setup.
+
+service: jgive
+
+image: 339712701096.dkr.ecr.eu-west-1.amazonaws.com/jgive
+
+servers:
+  web:
+    - 54.170.102.6
+
+registry:
+  server: 339712701096.dkr.ecr.eu-west-1.amazonaws.com
+  username: AWS
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+env:
+  secret:
+    - RAILS_MASTER_KEY
+    - DATABASE_URL
+  clear:
+    SOLID_QUEUE_IN_PUMA: true
+    APP_HOST: 54.170.102.6
+    APP_PROTOCOL: http
+
+# Uncomment when a domain points at the Elastic IP (Phase 5 in deploy plan):
+# proxy:
+#   ssl: true
+#   host: your-domain.com
+
+aliases:
+  console: app exec --interactive --reuse "bin/rails console"
+  shell: app exec --interactive --reuse "bash"
+  logs: app logs -f
+  dbc: app exec --interactive --reuse "bin/rails dbconsole --include-password"
+
+asset_path: /rails/public/assets
+
+builder:
+  arch: amd64
+  remote: ssh://ubuntu@54.170.102.6
+
+ssh:
+  user: ubuntu
+  keys:
+    - .ssh/jgive-deploy.pem

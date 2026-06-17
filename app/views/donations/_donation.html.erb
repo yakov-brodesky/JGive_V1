@@ -1,0 +1,28 @@
+<article
+  class="donor-card"
+  data-donation-filter-target="card"
+  data-search-text="<%= [ donation.display_name, donation.donor_email, donation.dedication_message, donation.note, recurrence_label(donation.recurrence), donation.status ].compact.join(" ").downcase %>"
+  data-amount-cents="<%= donation.amount_cents %>"
+  data-created-at="<%= donation.created_at.to_i %>">
+  <div class="donor-card__top">
+    <strong><%= donation.display_name %></strong>
+    <span><%= donation_relative_time(donation) %></span>
+  </div>
+
+  <div class="donor-card__body">
+    <span class="donor-card__amount"><%= format_ils(donation.amount_cents) %></span>
+    <span class="donor-card__heart" aria-hidden="true">♡</span>
+  </div>
+
+  <div class="donor-card__meta">
+    <span><%= recurrence_label(donation.recurrence) %></span>
+    <% if donation.pending? %>
+      <span class="badge badge--pending">ממתינה</span>
+    <% end %>
+  </div>
+
+  <% if donation.dedication_message.present? %>
+    <p class="donor-card__message"><%= donation.dedication_message %></p>
+    <button class="donor-card__read-more" type="button">קראו עוד</button>
+  <% end %>
+</article>

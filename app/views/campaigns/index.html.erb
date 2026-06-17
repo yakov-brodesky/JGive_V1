@@ -1,0 +1,43 @@
+<% content_for :title, "קמפיינים" %>
+
+<header class="site-header">
+  <div class="container">
+    <h1 class="site-title">JGive</h1>
+    <p class="site-tagline">תורמים יחד, משנים מציאות</p>
+  </div>
+</header>
+
+<main class="container">
+  <h2 class="section-title">קמפיינים פעילים</h2>
+
+  <div class="campaign-grid">
+    <% @campaigns.each do |campaign| %>
+      <%= link_to campaign_path(campaign), class: "campaign-card" do %>
+        <div class="campaign-card__cover">
+          <% if campaign.cover_image_url.present? %>
+            <img src="<%= campaign.cover_image_url %>" alt="<%= campaign.title %>" loading="lazy">
+          <% end %>
+        </div>
+
+        <div class="campaign-card__body">
+          <p class="campaign-card__org"><%= campaign.organization.name %></p>
+          <h3 class="campaign-card__title"><%= campaign.title %></h3>
+          <p class="campaign-card__subtitle"><%= campaign.subtitle %></p>
+
+          <div class="progress">
+            <div class="progress__bar" style="width: <%= [ campaign.progress_percentage, 100 ].min %>%"></div>
+          </div>
+
+          <div class="campaign-card__stats">
+            <span class="stat-raised"><%= format_ils(campaign.raised_amount_cents) %></span>
+            <span class="stat-goal">מתוך <%= format_ils(campaign.goal_amount_cents) %></span>
+          </div>
+          <div class="campaign-card__meta">
+            <span><%= format_progress(campaign) %></span>
+            <span><%= number_with_delimiter(campaign.total_donor_count) %> תורמים</span>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+</main>

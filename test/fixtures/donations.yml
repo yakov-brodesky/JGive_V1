@@ -1,0 +1,23 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  campaign: one
+  donor_name: MyString
+  donor_email: donor-one@example.org
+  amount_cents: 1
+  recurrence: one_time
+  display_preference: full_name
+  dedication_message: MyText
+  note: MyText
+  status: pending
+
+two:
+  campaign: two
+  donor_name: MyString
+  donor_email: donor-two@example.org
+  amount_cents: 1
+  recurrence: monthly
+  display_preference: first_name
+  dedication_message: MyText
+  note: MyText
+  status: paid

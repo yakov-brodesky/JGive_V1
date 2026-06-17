@@ -1,0 +1,23 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  organization: one
+  title: MyString
+  subtitle: MyString
+  cover_image_url: MyString
+  goal_amount_cents: 10000
+  baseline_raised_amount_cents: 1000
+  baseline_donor_count: 1
+  currency: ILS
+  story: MyText
+
+two:
+  organization: two
+  title: MyString
+  subtitle: MyString
+  cover_image_url: MyString
+  goal_amount_cents: 20000
+  baseline_raised_amount_cents: 2000
+  baseline_donor_count: 2
+  currency: ILS
+  story: MyText

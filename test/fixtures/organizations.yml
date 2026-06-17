@@ -1,0 +1,19 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  name: Demo Organization
+  category: Community
+  city: Tel Aviv
+  registration_number: "580000001"
+  email: info@example.org
+  phone: "030000001"
+  website: https://example.org
+
+two:
+  name: Second Organization
+  category: Welfare
+  city: Jerusalem
+  registration_number: "580000002"
+  email: hello@example.org
+  phone: "030000002"
+  website: https://second.example.org
