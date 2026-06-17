@@ -3,6 +3,17 @@
 # If running the rails server then create or migrate existing database
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   ./bin/rails db:prepare
+  ./bin/rails runner "
+    configs = { queue: 'solid_queue_recurring_tasks', cache: 'solid_cache_entries' }
+    configs.each do |db, table|
+      ActiveRecord::Base.establish_connection(db)
+      next if ActiveRecord::Base.connection.table_exists?(table)
+
+      schema = Rails.root.join(\"db/\#{db}_schema.rb\")
+      load(schema) if schema.exist?
+    end
+    ActiveRecord::Base.establish_connection(:primary)
+  "
 fi
 
 exec "${@}"
