@@ -17,7 +17,7 @@ orange_garden.update!(
   baseline_raised_amount_cents: 103_815_800,
   baseline_donor_count: 3_383,
   currency: "ILS",
-  allows_recurring: true,
+  allows_recurring: false,
   story: <<~STORY
     הצטרפו עכשיו והיו ממקימי ׳הגן הכתום׳ לזכר שירי, אריאל וכפיר ביבס, ולזכר כל ילדי ה-7 באוקטובר.
 
