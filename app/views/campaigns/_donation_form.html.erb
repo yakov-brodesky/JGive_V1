@@ -17,22 +17,30 @@
   <% end %>
 
   <div class="donation-form__body">
-    <fieldset class="segmented-control">
-      <legend>סוג התרומה</legend>
-      <%= form.radio_button :recurrence, "one_time", checked: donation.recurrence.blank? || donation.one_time? || !campaign.allows_recurring?, id: "donation_recurrence_one_time" %>
-      <%= form.label :recurrence_one_time, "תרומה חד-פעמית", for: "donation_recurrence_one_time" %>
+    <% recurring_enabled = campaign.allows_recurring? %>
 
-      <%= form.radio_button :recurrence, "monthly", checked: campaign.allows_recurring? && donation.monthly?, id: "donation_recurrence_monthly", disabled: !campaign.allows_recurring? %>
-      <%= form.label :recurrence_monthly, for: "donation_recurrence_monthly" do %>
-        הוראת קבע
-        <% unless campaign.allows_recurring? %>
-          <small class="segmented-control__hint">בקרוב</small>
+    <fieldset class="segmented-control segmented-control--recurrence">
+      <legend>סוג התרומה</legend>
+      <%= form.radio_button :recurrence, "one_time", checked: donation.recurrence.blank? || donation.one_time? || !recurring_enabled, id: "donation_recurrence_one_time" %>
+      <%= form.label :recurrence_one_time, for: "donation_recurrence_one_time" do %>
+        <span>תרומה חד-פעמית</span>
+      <% end %>
+
+      <% monthly_label_options = { for: "donation_recurrence_monthly" } %>
+      <% monthly_label_options[:class] = "is-disabled" unless recurring_enabled %>
+      <% monthly_label_options[:aria] = { disabled: true } unless recurring_enabled %>
+      <%= form.radio_button :recurrence, "monthly", checked: recurring_enabled && donation.monthly?, id: "donation_recurrence_monthly", disabled: !recurring_enabled %>
+      <%= form.label :recurrence_monthly, monthly_label_options do %>
+        <span>הוראת קבע</span>
+        <% unless recurring_enabled %>
+          <small class="segmented-control__hint">לא זמין בקמפיין זה</small>
         <% end %>
       <% end %>
     </fieldset>
 
     <% donation_options = campaign.donation_options.active.ordered.to_a %>
     <% default_option = donation_options.find { |option| option.badge.present? } || donation_options[2] %>
+    <% custom_amount_value = donation.donation_option_id.blank? && donation.amount_cents.present? ? donation.amount_cents / 100 : nil %>
 
     <% if donation_options.any? %>
       <fieldset class="amount-grid">
@@ -41,12 +49,15 @@
           <% field_id = "donation_option_#{option.id}" %>
           <% checked = donation.donation_option_id == option.id || (donation.donation_option_id.blank? && donation.amount_cents.blank? && option == default_option) %>
           <div class="amount-option">
-            <%= form.radio_button :donation_option_id, option.id, checked: checked, id: field_id, data: { donation_form_target: "amountRadio", amount_cents: option.amount_cents, action: "change->donation-form#updateTotal" } %>
+            <%= form.radio_button :donation_option_id, option.id, checked: checked, id: field_id, data: { donation_form_target: "amountRadio", amount_cents: option.amount_cents, action: "change->donation-form#selectPresetAmount" } %>
             <%= form.label :donation_option_id, for: field_id do %>
+              <% if option.badge.present? %>
+                <em><%= option.badge %></em>
+              <% end %>
               <strong><%= format_ils(option.amount_cents) %></strong>
               <span><%= option.label %></span>
               <% if option.badge.present? %>
-                <em><%= option.badge %></em>
+                <small>סכום מומלץ</small>
               <% end %>
             <% end %>
           </div>
@@ -57,12 +68,12 @@
     <div class="field field--custom-amount">
       <%= label_tag "donation_custom_amount", "סכום אחר" %>
       <%= number_field_tag "donation[custom_amount]",
-            nil,
+            custom_amount_value,
             id: "donation_custom_amount",
             min: 1,
             step: 1,
             placeholder: "סכום בשקלים",
-            data: { donation_form_target: "customAmount", action: "input->donation-form#updateTotal" } %>
+            data: { donation_form_target: "customAmount", action: "input->donation-form#enterCustomAmount" } %>
     </div>
 
     <div class="form-toggle-row">

@@ -6,6 +6,7 @@ export default class extends Controller {
 
   connect() {
     this.scrollY = 0
+    this.scrollLocked = false
     this.onKeydown = this.onKeydown.bind(this)
 
     if (this.openValue) this.open()
@@ -40,15 +41,21 @@ export default class extends Controller {
   }
 
   lockScroll() {
+    if (this.scrollLocked) return
+
     document.documentElement.classList.add("modal-open")
     document.body.classList.add("modal-open")
     document.body.style.top = `-${this.scrollY}px`
+    this.scrollLocked = true
   }
 
   unlockScroll() {
+    if (!this.scrollLocked) return
+
     document.documentElement.classList.remove("modal-open")
     document.body.classList.remove("modal-open")
     document.body.style.top = ""
     window.scrollTo(0, this.scrollY)
+    this.scrollLocked = false
   }
 }

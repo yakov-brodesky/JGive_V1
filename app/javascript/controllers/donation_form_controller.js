@@ -34,6 +34,24 @@ export default class extends Controller {
     this.syncDedicationType()
   }
 
+  selectPresetAmount() {
+    if (this.hasCustomAmountTarget) {
+      this.customAmountTarget.value = ""
+    }
+
+    this.updateTotal()
+  }
+
+  enterCustomAmount() {
+    if (this.hasCustomAmountTarget && this.customAmountTarget.value.trim()) {
+      this.amountRadioTargets.forEach((radio) => {
+        radio.checked = false
+      })
+    }
+
+    this.updateTotal()
+  }
+
   updateTotal() {
     if (!this.hasTotalAmountTarget) return
 

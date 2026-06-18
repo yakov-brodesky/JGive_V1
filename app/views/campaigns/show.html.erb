@@ -16,7 +16,7 @@
   </div>
 </header>
 
-<main class="campaign-page" data-controller="donation-modal" data-donation-modal-open-value="<%= @donation.errors.any? %>">
+<main class="campaign-page" data-controller="donation-modal campaign-tabs" data-donation-modal-open-value="<%= @donation.errors.any? %>">
   <% if notice.present? %>
     <div class="page-shell">
       <div class="flash flash--notice"><%= notice %></div>
@@ -91,18 +91,18 @@
     </div>
   </section>
 
-  <nav class="page-shell campaign-tabs" aria-label="תוכן הקמפיין">
-    <a href="#project">על הפרויקט</a>
-    <a href="#recent-donations">תרומות אחרונות</a>
-    <a href="#ambassadors">לוח שגרירים</a>
-    <a href="#groups">קבוצות</a>
-    <a href="#organization">על העמותה</a>
-    <a href="#updates">עדכונים</a>
+  <nav class="page-shell campaign-tabs" aria-label="תוכן הקמפיין" role="tablist">
+    <a id="project-tab" href="#project" role="tab" aria-controls="project" aria-selected="true" data-campaign-tabs-target="link" data-action="campaign-tabs#navigate keydown.right->campaign-tabs#next keydown.left->campaign-tabs#previous">על הפרויקט</a>
+    <a id="recent-donations-tab" href="#recent-donations" role="tab" aria-controls="recent-donations" aria-selected="false" tabindex="-1" data-campaign-tabs-target="link" data-action="campaign-tabs#navigate keydown.right->campaign-tabs#next keydown.left->campaign-tabs#previous">תרומות אחרונות</a>
+    <a id="ambassadors-tab" href="#ambassadors" role="tab" aria-controls="ambassadors" aria-selected="false" tabindex="-1" data-campaign-tabs-target="link" data-action="campaign-tabs#navigate keydown.right->campaign-tabs#next keydown.left->campaign-tabs#previous">לוח שגרירים</a>
+    <a id="groups-tab" href="#groups" role="tab" aria-controls="groups" aria-selected="false" tabindex="-1" data-campaign-tabs-target="link" data-action="campaign-tabs#navigate keydown.right->campaign-tabs#next keydown.left->campaign-tabs#previous">קבוצות</a>
+    <a id="organization-tab" href="#organization" role="tab" aria-controls="organization" aria-selected="false" tabindex="-1" data-campaign-tabs-target="link" data-action="campaign-tabs#navigate keydown.right->campaign-tabs#next keydown.left->campaign-tabs#previous">על העמותה</a>
+    <a id="updates-tab" href="#updates" role="tab" aria-controls="updates" aria-selected="false" tabindex="-1" data-campaign-tabs-target="link" data-action="campaign-tabs#navigate keydown.right->campaign-tabs#next keydown.left->campaign-tabs#previous">עדכונים</a>
   </nav>
 
   <div class="page-shell campaign-content">
     <article>
-      <section id="project" class="content-section project-story">
+      <section id="project" class="content-section project-story" role="tabpanel" aria-labelledby="project-tab" data-campaign-tabs-target="panel">
         <p class="eyebrow">על הפרויקט</p>
         <h2>הצטרפו עכשיו והיו ממקימי ׳הגן הכתום׳</h2>
         <h3>לזכר שירי, אריאל וכפיר ביבס,<br>ולזכר כל ילדי ה-7 באוקטובר.</h3>
@@ -174,7 +174,7 @@
         </div>
       </section>
 
-      <section id="recent-donations" class="content-section recent-donations" data-controller="donation-filter">
+      <section id="recent-donations" class="content-section recent-donations" role="tabpanel" aria-labelledby="recent-donations-tab" data-controller="donation-filter" data-campaign-tabs-target="panel" hidden>
         <h2>תרומות אחרונות</h2>
 
         <%= form_with url: campaign_path(@campaign, anchor: "recent-donations"), method: :get, class: "tab-tools", data: { action: "submit->donation-filter#preventSubmit" } do |form| %>
@@ -214,7 +214,7 @@
         <% end %>
       </section>
 
-      <section id="ambassadors" class="content-section directory-section">
+      <section id="ambassadors" class="content-section directory-section" role="tabpanel" aria-labelledby="ambassadors-tab" data-campaign-tabs-target="panel" hidden>
         <h2>שגרירים</h2>
         <div class="tab-tools tab-tools--single">
           <div class="tab-tools__field">
@@ -227,7 +227,7 @@
         </div>
       </section>
 
-      <section id="groups" class="content-section directory-section">
+      <section id="groups" class="content-section directory-section" role="tabpanel" aria-labelledby="groups-tab" data-campaign-tabs-target="panel" hidden>
         <h2>קבוצות</h2>
         <div class="tab-tools tab-tools--single">
           <div class="tab-tools__field">
@@ -240,7 +240,7 @@
         </div>
       </section>
 
-      <section id="organization" class="content-section organization-card">
+      <section id="organization" class="content-section organization-card" role="tabpanel" aria-labelledby="organization-tab" data-campaign-tabs-target="panel" hidden>
         <h2>על העמותה</h2>
         <p><strong><%= @campaign.organization.name %></strong> היא תנועה לאומית-סביבתית לריפוי החברה הישראלית דרך הטבע וחיבור לאדמה.</p>
         <p>
@@ -253,7 +253,7 @@
         <% end %>
       </section>
 
-      <section id="updates" class="content-section directory-section">
+      <section id="updates" class="content-section directory-section" role="tabpanel" aria-labelledby="updates-tab" data-campaign-tabs-target="panel" hidden>
         <h2>עדכונים</h2>
         <div class="empty-panel">
           <p>עדיין לא פורסמו עדכונים לקמפיין.</p>
