@@ -250,11 +250,23 @@ a {
   overflow: hidden;
 }
 
+.campaign-hero__image--orange-garden {
+  aspect-ratio: 1024 / 247;
+  background-color: #f4efe5;
+  background-repeat: no-repeat;
+  background-size: contain;
+  min-height: 0;
+}
+
 .campaign-hero__image::before {
   content: "";
   position: absolute;
   inset: 0;
   background: linear-gradient(180deg, rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.22));
+}
+
+.campaign-hero__image--orange-garden::before {
+  content: none;
 }
 
 .campaign-hero__logo {
@@ -872,14 +884,12 @@ body.modal-open {
 
 .before-after__panel--after {
   background-image:
-    linear-gradient(rgba(20, 70, 28, 0.08), rgba(20, 70, 28, 0.08)),
-    url("https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=900&q=80");
+    linear-gradient(rgba(20, 70, 28, 0.08), rgba(20, 70, 28, 0.08));
 }
 
 .before-after__panel--before {
   background-image:
-    linear-gradient(rgba(160, 120, 70, 0.12), rgba(160, 120, 70, 0.12)),
-    url("https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80");
+    linear-gradient(rgba(160, 120, 70, 0.12), rgba(160, 120, 70, 0.12));
 }
 
 .before-after__panel span {
@@ -900,6 +910,10 @@ body.modal-open {
 
 .story-map {
   max-width: 760px;
+}
+
+.story-map--wide {
+  max-width: 980px;
 }
 
 .story-map img,
@@ -1596,6 +1610,10 @@ body.modal-open {
 
   .campaign-hero__image {
     min-height: 270px;
+  }
+
+  .campaign-hero__image--orange-garden {
+    min-height: 0;
   }
 
   .campaign-hero__logo {

@@ -12,7 +12,7 @@ orange_garden = venatata.campaigns.find_or_initialize_by(title: "הגן הכתו
 orange_garden.update!(
   organization: venatata,
   subtitle: "לזכר בני משפחת ביבס וילדי ה-7 באוקטובר",
-  cover_image_url: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1600&q=80",
+  cover_image_url: "/orange-garden/concept.jpg",
   goal_amount_cents: 200_000_000,
   baseline_raised_amount_cents: 103_815_800,
   baseline_donor_count: 3_383,

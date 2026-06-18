@@ -1,4 +1,6 @@
 <% content_for :title, @campaign.title %>
+<% orange_garden_campaign = @campaign.title == "הגן הכתום" %>
+<% hero_image_url = orange_garden_campaign ? "/orange-garden/concept.jpg" : @campaign.cover_image_url %>
 
 <header class="jgive-header">
   <div class="page-shell jgive-header__inner">
@@ -24,17 +26,21 @@
   <% end %>
 
   <section class="campaign-hero" aria-label="תמונת הקמפיין">
-    <div class="campaign-hero__image" style="background-image: url('<%= @campaign.cover_image_url %>')">
-      <div class="campaign-hero__logo campaign-hero__logo--right">
-        <span>הגן הכתום</span>
-        <small>לזכרם, למען כולנו</small>
-      </div>
+    <div class="campaign-hero__image <%= "campaign-hero__image--orange-garden" if orange_garden_campaign %>" style="background-image: url('<%= hero_image_url %>')">
+      <% unless orange_garden_campaign %>
+        <div class="campaign-hero__logo campaign-hero__logo--right">
+          <span>הגן הכתום</span>
+          <small>לזכרם, למען כולנו</small>
+        </div>
+      <% end %>
       <div class="campaign-hero__play" aria-hidden="true"></div>
-      <div class="campaign-hero__logo campaign-hero__logo--left">
-        <span><%= @campaign.organization.name %></span>
-        <small>מקימה את הגן הכתום</small>
-      </div>
-      <h1 class="campaign-hero__caption"><%= @campaign.subtitle %></h1>
+      <% unless orange_garden_campaign %>
+        <div class="campaign-hero__logo campaign-hero__logo--left">
+          <span><%= @campaign.organization.name %></span>
+          <small>מקימה את הגן הכתום</small>
+        </div>
+        <h1 class="campaign-hero__caption"><%= @campaign.subtitle %></h1>
+      <% end %>
     </div>
   </section>
 
@@ -119,14 +125,10 @@
           על פני 20 דונם יוקם מרחב חי של טבע, מים, משחק, משפחה וריפוי - פתוח לכולם.
         </p>
 
-        <div class="before-after" aria-label="הדמיית לפני ואחרי">
-          <div class="before-after__panel before-after__panel--after">
-            <span>אחרי</span>
-          </div>
-          <div class="before-after__panel before-after__panel--before">
-            <span>לפני</span>
-          </div>
-        </div>
+        <figure class="story-map story-map--wide">
+          <img src="/orange-garden/concept.jpg" alt="הדמיית השטח כיום ומה שהוא יהפוך להיות">
+          <figcaption>השטח כיום, ומה שהוא יהפוך להיות - תכנון: איזי בלנק אדריכלי נוף</figcaption>
+        </figure>
 
         <h3>מה יחכה לנו בגן הכתום?</h3>
         <p>
@@ -151,11 +153,6 @@
           ובתכנון אדריכלי נוף. השטח כבר מחכה, התוכניות מוכנות, ועכשיו זה תלוי בנו.
         </p>
 
-        <figure class="story-map">
-          <img src="https://images.unsplash.com/photo-1577086664693-894d8405334a?auto=format&fit=crop&w=1200&q=80" alt="מפה ותכנון רעיוני של הגן">
-          <figcaption>מפת השראה ותכנון רעיוני למרחב הגן</figcaption>
-        </figure>
-
         <h3>למען כל ילדי ישראל. למען התיקון של כולנו.</h3>
         <p>
           כדי שהגן יממש את מלוא הפוטנציאל שלו, אנחנו זקוקים לכם. כל תרומה תומכת ישירות
@@ -164,12 +161,12 @@
 
         <div class="story-gallery">
           <figure>
-            <img src="https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=900&q=80" alt="משפחה עם ילדים בטבע">
-            <figcaption>מרחב משפחתי, ירוק ומזמין</figcaption>
+            <img src="/orange-garden/family.jpg" alt="שירי ואריאל ביבס עם עופרי ביבס ובנה">
+            <figcaption>שירי ואריאל ביבס עם עופרי ביבס ובנה</figcaption>
           </figure>
           <figure>
-            <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=900&q=80" alt="קהילה מתכנסת יחד">
-            <figcaption>קהילה שבונה מקום של תקווה</figcaption>
+            <img src="/orange-garden/concept.jpg" alt="קיר המשאלות והדמיית הגן הכתום">
+            <figcaption>מצד שמאל - קיר המשאלות בו כל ילד יוכל לבקש את משאלת ליבו</figcaption>
           </figure>
         </div>
       </section>
