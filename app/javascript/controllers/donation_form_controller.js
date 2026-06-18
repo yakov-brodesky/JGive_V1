@@ -9,13 +9,17 @@ export default class extends Controller {
     "honoreeLabel",
     "honoreeField",
     "recipientNamePanel",
-    "memoryRadio"
+    "memoryRadio",
+    "amountRadio",
+    "customAmount",
+    "totalAmount"
   ]
 
   connect() {
     this.syncNote()
     this.syncDedication()
     this.syncDedicationType()
+    this.updateTotal()
   }
 
   toggleNote() {
@@ -28,6 +32,33 @@ export default class extends Controller {
 
   updateDedicationType() {
     this.syncDedicationType()
+  }
+
+  updateTotal() {
+    if (!this.hasTotalAmountTarget) return
+
+    const amountCents = this.selectedAmountCents()
+    this.totalAmountTarget.textContent = amountCents ? this.formatIls(amountCents) : "ייבחר בטופס"
+  }
+
+  selectedAmountCents() {
+    const customAmount = this.hasCustomAmountTarget ? this.customAmountTarget.value.trim() : ""
+
+    if (customAmount) {
+      const parsed = Number.parseFloat(customAmount)
+      return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed * 100) : null
+    }
+
+    const selectedOption = this.amountRadioTargets.find((radio) => radio.checked)
+    if (!selectedOption) return null
+
+    const amountCents = Number.parseInt(selectedOption.dataset.amountCents, 10)
+    return Number.isFinite(amountCents) && amountCents > 0 ? amountCents : null
+  }
+
+  formatIls(cents) {
+    const shekels = Math.round(cents / 100)
+    return `\u20AA${shekels.toLocaleString("he-IL")}`
   }
 
   syncNote() {

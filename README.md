@@ -43,6 +43,50 @@ This keeps the demo flow simple since there is no real payment checkout.
 In a real payment system, only `paid`/settled donations should count toward
 campaign totals. A pending donation that is never paid should not inflate progress.
 
+## Donation amounts and recurring donations
+
+### Preset amounts are database-driven
+
+Each campaign defines its own preset donation tiers via the `donation_options`
+table (`belongs_to :campaign`), instead of hardcoding amounts in a helper. A
+donation can reference the chosen option (`donations.donation_option_id`) or use
+a free-form custom amount. Seed two campaigns' tiers in [`db/seeds.rb`](db/seeds.rb).
+
+### Recurring donations (intentionally cut scope)
+
+The form offers one-time vs. recurring (הוראת קבע). A campaign opts in via the
+`campaigns.allows_recurring` boolean; when `false`, the recurring option is
+rendered disabled ("בקרוב") and the controller defensively forces `one_time`.
+Currently `recurrence` is just a stored donor preference on the `Donation` — no
+billing schedule is generated, because **payment/checkout is out of scope** for
+this assignment.
+
+To actually run recurring billing, I would add:
+
+- A `donation_schedules` (or `subscriptions`) table: `donation_id`, `interval`
+  (`monthly`), `installments` (e.g. 12/36), `next_charge_on`, `status`
+  (`active`/`paused`/`cancelled`), and the payment-provider subscription/token id.
+- A `donation_charges` (installment ledger) table: one row per attempted charge
+  with `scheduled_on`, `amount_cents`, `status` (`scheduled`/`paid`/`failed`),
+  `paid_at`, and the provider charge/transaction id.
+- A scheduled job (Solid Queue) that finds due charges, calls the provider, and
+  updates the ledger; a webhook moves each charge `pending → paid` (and the parent
+  donation), mirroring the one-time flow below.
+
+Until then, recurring progress would count the single stored amount, not a
+projected pledge total, to avoid inflating campaign totals with uncharged future
+installments.
+
+### Wiring in a real payment provider (pending → paid)
+
+1. On submit, create the `pending` donation (as today), then create a provider
+   PaymentIntent/Checkout session and redirect the donor to it.
+2. The provider redirects back on success; a signed **webhook** is the source of
+   truth. On `payment_succeeded`, look up the donation and mark it `paid`
+   (store the transaction id); on failure, keep it `pending`/mark `failed`.
+3. Switch `Donation.counts_toward_progress` to count only `paid` donations so
+   progress reflects settled money.
+
 ## Production deploy (AWS: Kamal + EC2 + RDS)
 
 Infrastructure lives in **eu-west-1** (EC2 + RDS PostgreSQL + ECR). Kamal deploys the Docker image from [`Dockerfile`](Dockerfile) to the EC2 host.

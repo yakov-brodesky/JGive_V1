@@ -4,7 +4,7 @@
     <strong>פרטי התרומה שלי</strong>
   </div>
 
-<%= form_with model: [ campaign, donation ], class: "donation-form" do |form| %>
+<%= form_with model: [ campaign, donation ], class: "donation-form", data: { donation_form_target: "form" } do |form| %>
   <% if donation.errors.any? %>
     <div class="flash flash--error">
       <p>לא ניתן לשמור את התרומה:</p>
@@ -19,29 +19,40 @@
   <div class="donation-form__body">
     <fieldset class="segmented-control">
       <legend>סוג התרומה</legend>
-      <%= form.radio_button :recurrence, "one_time", checked: donation.recurrence.blank? || donation.one_time?, id: "donation_recurrence_one_time" %>
+      <%= form.radio_button :recurrence, "one_time", checked: donation.recurrence.blank? || donation.one_time? || !campaign.allows_recurring?, id: "donation_recurrence_one_time" %>
       <%= form.label :recurrence_one_time, "תרומה חד-פעמית", for: "donation_recurrence_one_time" %>
 
-      <%= form.radio_button :recurrence, "monthly", id: "donation_recurrence_monthly" %>
-      <%= form.label :recurrence_monthly, "הוראת קבע", for: "donation_recurrence_monthly" %>
-    </fieldset>
-
-    <fieldset class="amount-grid">
-      <legend>בחרו סכום</legend>
-      <% donation_amount_options.each_with_index do |(amount, description), index| %>
-        <% field_id = "donation_amount_#{amount}" %>
-        <div class="amount-option">
-          <%= form.radio_button :amount, amount, checked: index == 2 && donation.amount_cents.blank?, id: field_id %>
-          <%= form.label :amount, for: field_id do %>
-            <strong><%= format_ils(amount * 100) %></strong>
-            <span><%= description %></span>
-            <% if amount == 360 %>
-              <em>הכי נבחר</em>
-            <% end %>
-          <% end %>
-        </div>
+      <%= form.radio_button :recurrence, "monthly", checked: campaign.allows_recurring? && donation.monthly?, id: "donation_recurrence_monthly", disabled: !campaign.allows_recurring? %>
+      <%= form.label :recurrence_monthly, for: "donation_recurrence_monthly" do %>
+        הוראת קבע
+        <% unless campaign.allows_recurring? %>
+          <small class="segmented-control__hint">בקרוב</small>
+        <% end %>
       <% end %>
     </fieldset>
+
+    <% donation_options = campaign.donation_options.active.ordered.to_a %>
+    <% default_option = donation_options.find { |option| option.badge.present? } || donation_options[2] %>
+
+    <% if donation_options.any? %>
+      <fieldset class="amount-grid">
+        <legend>בחרו סכום</legend>
+        <% donation_options.each do |option| %>
+          <% field_id = "donation_option_#{option.id}" %>
+          <% checked = donation.donation_option_id == option.id || (donation.donation_option_id.blank? && donation.amount_cents.blank? && option == default_option) %>
+          <div class="amount-option">
+            <%= form.radio_button :donation_option_id, option.id, checked: checked, id: field_id, data: { donation_form_target: "amountRadio", amount_cents: option.amount_cents, action: "change->donation-form#updateTotal" } %>
+            <%= form.label :donation_option_id, for: field_id do %>
+              <strong><%= format_ils(option.amount_cents) %></strong>
+              <span><%= option.label %></span>
+              <% if option.badge.present? %>
+                <em><%= option.badge %></em>
+              <% end %>
+            <% end %>
+          </div>
+        <% end %>
+      </fieldset>
+    <% end %>
 
     <div class="field field--custom-amount">
       <%= label_tag "donation_custom_amount", "סכום אחר" %>
@@ -50,7 +61,8 @@
             id: "donation_custom_amount",
             min: 1,
             step: 1,
-            placeholder: "סכום בשקלים" %>
+            placeholder: "סכום בשקלים",
+            data: { donation_form_target: "customAmount", action: "input->donation-form#updateTotal" } %>
     </div>
 
     <div class="form-toggle-row">
@@ -125,7 +137,7 @@
   <div class="donation-form__footer">
     <div class="donation-panel__total">
       <span>סכום התרומה שלך</span>
-      <strong>ייבחר בטופס</strong>
+      <strong data-donation-form-target="totalAmount">ייבחר בטופס</strong>
     </div>
 
     <%= form.submit "המשך", class: "btn btn--primary btn--donate" %>

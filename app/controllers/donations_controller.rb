@@ -1,11 +1,13 @@
 class DonationsController < ApplicationController
   def create
-    @campaign = Campaign.find(params[:campaign_id])
+    @campaign = Campaign.includes(:organization, :donation_options).find(params[:campaign_id])
     @donation = @campaign.donations.new(donation_params)
 
     # Demo flow: only ever create pending donations, with safe enum defaults.
     @donation.status = "pending"
     @donation.recurrence = "one_time" if @donation.recurrence.blank?
+    # Recurring billing is not implemented; only offer it when the campaign opts in.
+    @donation.recurrence = "one_time" unless @campaign.allows_recurring?
     @donation.display_preference = "full_name" if @donation.display_preference.blank?
 
     if @donation.save
@@ -24,7 +26,7 @@ class DonationsController < ApplicationController
     permitted = params.require(:donation).permit(
       :donor_email,
       :donor_name,
-      :amount,
+      :donation_option_id,
       :custom_amount,
       :recurrence,
       :display_preference,
@@ -40,11 +42,27 @@ class DonationsController < ApplicationController
 
     permitted.delete(:note) unless permitted.delete(:add_note) == "1"
     apply_dedication_fields!(permitted)
-
-    # The form collects whole shekels; persist the value in cents.
-    amount = permitted.delete(:custom_amount).presence || permitted.delete(:amount)
-    permitted[:amount_cents] = (amount.to_f * 100).round if amount.present?
+    resolve_amount!(permitted)
     permitted
+  end
+
+  def resolve_amount!(permitted)
+    custom_amount = permitted.delete(:custom_amount)
+    option_id = permitted.delete(:donation_option_id)
+
+    if custom_amount.present?
+      permitted[:amount_cents] = (custom_amount.to_f * 100).round
+      permitted[:donation_option_id] = nil
+      return
+    end
+
+    return if option_id.blank?
+
+    option = @campaign.donation_options.find_by(id: option_id)
+    return unless option
+
+    permitted[:amount_cents] = option.amount_cents
+    permitted[:donation_option_id] = option.id
   end
 
   def apply_dedication_fields!(permitted)

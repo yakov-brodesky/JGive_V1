@@ -1,6 +1,7 @@
 class Campaign < ApplicationRecord
   belongs_to :organization
   has_many :donations, dependent: :destroy
+  has_many :donation_options, dependent: :destroy
 
   validates :title, :subtitle, :story, :currency, presence: true
   validates :goal_amount_cents, numericality: { only_integer: true, greater_than: 0 }

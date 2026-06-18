@@ -27,16 +27,6 @@ module ApplicationHelper
     }
   end
 
-  def donation_amount_options
-    [
-      [ 180, "נטיעת עץ" ],
-      [ 260, "נטיעת 2 עצים" ],
-      [ 360, "נטיעת 3 עצים - לזכרם" ],
-      [ 1_800, "בונים מרחב לילדים" ],
-      [ 5_000, "בוני הגן הכתום" ]
-    ]
-  end
-
   def recurrence_label(value)
     recurrence_options.key(value) || value
   end

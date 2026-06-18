@@ -1,5 +1,6 @@
 class Donation < ApplicationRecord
   belongs_to :campaign
+  belongs_to :donation_option, optional: true
 
   enum :recurrence, {
     one_time: "one_time",

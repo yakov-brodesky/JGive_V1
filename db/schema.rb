@@ -10,11 +10,12 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_17_230000) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_18_093001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
   create_table "campaigns", force: :cascade do |t|
+    t.boolean "allows_recurring", default: false, null: false
     t.integer "baseline_donor_count", default: 0, null: false
     t.bigint "baseline_raised_amount_cents", default: 0, null: false
     t.string "cover_image_url"
@@ -29,6 +30,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_17_230000) do
     t.index ["organization_id"], name: "index_campaigns_on_organization_id"
   end
 
+  create_table "donation_options", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.bigint "amount_cents", null: false
+    t.string "badge"
+    t.bigint "campaign_id", null: false
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "label", null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["campaign_id", "position"], name: "index_donation_options_on_campaign_id_and_position"
+    t.index ["campaign_id"], name: "index_donation_options_on_campaign_id"
+  end
+
   create_table "donations", force: :cascade do |t|
     t.bigint "amount_cents", null: false
     t.bigint "campaign_id", null: false
@@ -39,6 +54,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_17_230000) do
     t.string "dedication_recipient_name"
     t.string "dedication_type"
     t.string "display_preference", default: "full_name", null: false
+    t.bigint "donation_option_id"
     t.string "donor_email", null: false
     t.string "donor_name"
     t.text "note"
@@ -47,6 +63,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_17_230000) do
     t.datetime "updated_at", null: false
     t.index ["campaign_id", "status"], name: "index_donations_on_campaign_id_and_status"
     t.index ["campaign_id"], name: "index_donations_on_campaign_id"
+    t.index ["donation_option_id"], name: "index_donations_on_donation_option_id"
   end
 
   create_table "organizations", force: :cascade do |t|
@@ -62,5 +79,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_17_230000) do
   end
 
   add_foreign_key "campaigns", "organizations"
+  add_foreign_key "donation_options", "campaigns"
   add_foreign_key "donations", "campaigns"
+  add_foreign_key "donations", "donation_options"
 end

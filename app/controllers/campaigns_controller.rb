@@ -4,7 +4,7 @@ class CampaignsController < ApplicationController
   end
 
   def show
-    @campaign = Campaign.includes(:organization).find(params[:id])
+    @campaign = Campaign.includes(:organization, :donation_options).find(params[:id])
     @donation = @campaign.donations.new
     @donation_search = params[:q].to_s.strip
     @donation_sort = params[:sort].presence_in(%w[newest amount]) || "newest"

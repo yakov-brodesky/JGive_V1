@@ -10,6 +10,7 @@ one:
   baseline_donor_count: 1
   currency: ILS
   story: MyText
+  allows_recurring: true
 
 two:
   organization: two
@@ -21,3 +22,4 @@ two:
   baseline_donor_count: 2
   currency: ILS
   story: MyText
+  allows_recurring: false

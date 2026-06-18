@@ -1,0 +1,16 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+tree:
+  campaign: one
+  amount_cents: 18000
+  label: נטיעת עץ
+  position: 0
+  active: true
+
+featured:
+  campaign: one
+  amount_cents: 36000
+  label: נטיעת 3 עצים
+  position: 1
+  badge: הכי נבחר
+  active: true

@@ -11,4 +11,10 @@ class CampaignTest < ActiveSupport::TestCase
     assert_equal 1_001, campaign.raised_amount_cents
     assert_equal 2, campaign.total_donor_count
   end
+
+  test "recurring donations count their amount once toward progress" do
+    campaign = campaigns(:two)
+
+    assert_equal 2_001, campaign.raised_amount_cents
+  end
 end
