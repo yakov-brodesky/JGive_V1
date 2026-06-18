@@ -18,7 +18,7 @@ class CampaignsController < ApplicationController
 
     if @donation_search.present?
       donations = donations.where(
-        "donor_name ILIKE :query OR donor_email ILIKE :query OR dedication_message ILIKE :query",
+        "donor_name ILIKE :query OR donor_email ILIKE :query OR dedication_honoree ILIKE :query OR dedication_recipient_name ILIKE :query OR dedication_recipient_email ILIKE :query OR dedication_message ILIKE :query OR note ILIKE :query",
         query: "%#{@donation_search}%"
       )
     end

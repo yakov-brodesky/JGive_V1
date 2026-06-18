@@ -34,6 +34,7 @@ class DonationsController < ApplicationController
       :dedication_enabled,
       :dedication_type,
       :dedication_honoree,
+      :dedication_recipient_name,
       :dedication_recipient_email
     )
 
@@ -48,20 +49,16 @@ class DonationsController < ApplicationController
 
   def apply_dedication_fields!(permitted)
     enabled = permitted.delete(:dedication_enabled) == "1"
-    permitted.delete(:dedication_type)
-    permitted.delete(:dedication_honoree)
-    permitted.delete(:dedication_recipient_email)
-    personal_message = permitted.delete(:dedication_message).to_s.strip
 
-    return unless enabled
+    unless enabled
+      permitted[:dedication_type] = nil
+      permitted[:dedication_honoree] = nil
+      permitted[:dedication_recipient_name] = nil
+      permitted[:dedication_recipient_email] = nil
+      permitted[:dedication_message] = nil
+      return
+    end
 
-    prefix = params.dig(:donation, :dedication_type) == "memory" ? "לזכר" : "לכבוד"
-    honoree = params.dig(:donation, :dedication_honoree).to_s.strip
-    recipient_email = params.dig(:donation, :dedication_recipient_email).to_s.strip
-    parts = []
-    parts << "#{prefix} #{honoree}" if honoree.present?
-    parts << personal_message if personal_message.present?
-    parts << "נשלח ל: #{recipient_email}" if recipient_email.present?
-    permitted[:dedication_message] = parts.join(" | ") if parts.any?
+    permitted[:dedication_recipient_name] = nil if permitted[:dedication_type] != "memory"
   end
 end

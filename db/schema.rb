@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_17_091259) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_17_230000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -33,7 +33,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_17_091259) do
     t.bigint "amount_cents", null: false
     t.bigint "campaign_id", null: false
     t.datetime "created_at", null: false
+    t.string "dedication_honoree"
     t.text "dedication_message"
+    t.string "dedication_recipient_email"
+    t.string "dedication_recipient_name"
+    t.string "dedication_type"
     t.string "display_preference", default: "full_name", null: false
     t.string "donor_email", null: false
     t.string "donor_name"

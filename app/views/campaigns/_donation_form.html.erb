@@ -64,7 +64,7 @@
     </div>
 
     <div class="form-toggle-row form-toggle-row--switch">
-      <%= check_box_tag "donation[dedication_enabled]", "1", donation.dedication_message.present?, id: "donation_dedication_enabled", class: "toggle-switch__input", data: { donation_form_target: "dedicationToggle", action: "change->donation-form#toggleDedication" } %>
+      <%= check_box_tag "donation[dedication_enabled]", "1", donation.dedicated?, id: "donation_dedication_enabled", class: "toggle-switch__input", data: { donation_form_target: "dedicationToggle", action: "change->donation-form#toggleDedication" } %>
       <label class="form-toggle-row__label" for="donation_dedication_enabled">הקדשת תרומה</label>
       <label class="toggle-switch" for="donation_dedication_enabled" aria-hidden="true">
         <span class="toggle-switch__visual"></span>
@@ -74,24 +74,29 @@
     <div class="dedication-panel" data-donation-form-target="dedicationPanel" hidden>
       <fieldset class="dedication-type">
         <legend>סוג ההקדשה: <span class="required">*</span></legend>
-        <%= radio_button_tag "donation[dedication_type]", "honor", true, id: "donation_dedication_type_honor", data: { action: "change->donation-form#updateDedicationType" } %>
-        <%= label_tag "donation_dedication_type_honor", "לכבוד" %>
+        <%= form.radio_button :dedication_type, "honor", checked: donation.dedication_type.blank? || donation.honor?, id: "donation_dedication_type_honor", data: { action: "change->donation-form#updateDedicationType" } %>
+        <%= form.label :dedication_type_honor, "לכבוד", for: "donation_dedication_type_honor" %>
 
-        <%= radio_button_tag "donation[dedication_type]", "memory", false, id: "donation_dedication_type_memory", data: { donation_form_target: "memoryRadio", action: "change->donation-form#updateDedicationType" } %>
-        <%= label_tag "donation_dedication_type_memory", "לזכר" %>
+        <%= form.radio_button :dedication_type, "memory", id: "donation_dedication_type_memory", data: { donation_form_target: "memoryRadio", action: "change->donation-form#updateDedicationType" } %>
+        <%= form.label :dedication_type_memory, "לזכר", for: "donation_dedication_type_memory" %>
       </fieldset>
 
       <div class="field">
-        <%= label_tag "donation_dedication_honoree", nil, data: { donation_form_target: "honoreeLabel" } do %>
-          לכבוד מי ההקדשה <span class="required">*</span>
+        <%= form.label :dedication_honoree, nil, data: { donation_form_target: "honoreeLabel" } do %>
+          <%= donation.memory? ? "לזכר מי ההקדשה" : "לכבוד מי ההקדשה" %> <span class="required">*</span>
         <% end %>
-        <%= text_field_tag "donation[dedication_honoree]", nil, placeholder: "לכבוד מי ההקדשה", data: { donation_form_target: "honoreeField" } %>
+        <%= form.text_field :dedication_honoree, placeholder: donation.memory? ? "לזכר מי ההקדשה" : "לכבוד מי ההקדשה", data: { donation_form_target: "honoreeField" } %>
+      </div>
+
+      <div class="field" data-donation-form-target="recipientNamePanel" hidden>
+        <%= form.label :dedication_recipient_name, "למי תשלח ההקדשה" %>
+        <%= form.text_field :dedication_recipient_name, placeholder: "למי תשלח ההקדשה" %>
       </div>
 
       <div class="field">
-        <%= label_tag "donation_dedication_recipient_email", "אימייל לשליחה" %>
+        <%= form.label :dedication_recipient_email, "אימייל לשליחה" %>
         <span class="required">*</span>
-        <%= email_field_tag "donation[dedication_recipient_email]", nil, placeholder: "you@example.com" %>
+        <%= form.email_field :dedication_recipient_email, placeholder: "you@example.com" %>
       </div>
 
       <div class="field">

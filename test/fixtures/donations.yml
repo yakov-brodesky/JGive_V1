@@ -7,6 +7,9 @@ one:
   amount_cents: 1
   recurrence: one_time
   display_preference: full_name
+  dedication_type: honor
+  dedication_honoree: My Honoree
+  dedication_recipient_email: recipient-one@example.org
   dedication_message: MyText
   note: MyText
   status: pending
@@ -18,6 +21,10 @@ two:
   amount_cents: 1
   recurrence: monthly
   display_preference: first_name
+  dedication_type: memory
+  dedication_honoree: My Honoree
+  dedication_recipient_name: My Recipient
+  dedication_recipient_email: recipient-two@example.org
   dedication_message: MyText
   note: MyText
   status: paid

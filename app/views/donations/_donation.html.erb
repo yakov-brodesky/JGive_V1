@@ -1,7 +1,7 @@
 <article
   class="donor-card"
   data-donation-filter-target="card"
-  data-search-text="<%= [ donation.display_name, donation.donor_email, donation.dedication_message, donation.note, recurrence_label(donation.recurrence), donation.status ].compact.join(" ").downcase %>"
+  data-search-text="<%= [ donation.display_name, donation.donor_email, donation.dedication_summary, donation.dedication_message, donation.note, recurrence_label(donation.recurrence), donation.status ].compact.join(" ").downcase %>"
   data-amount-cents="<%= donation.amount_cents %>"
   data-created-at="<%= donation.created_at.to_i %>">
   <div class="donor-card__top">
@@ -21,7 +21,18 @@
     <% end %>
   </div>
 
-  <% if donation.dedication_message.present? %>
+  <% if donation.dedicated? %>
+    <p class="donor-card__message">
+      <% if donation.dedication_summary.present? %>
+        <strong><%= donation.dedication_summary %></strong>
+      <% end %>
+      <% if donation.dedication_message.present? %>
+        <% if donation.dedication_summary.present? %><br><% end %>
+        <%= donation.dedication_message %>
+      <% end %>
+    </p>
+    <button class="donor-card__read-more" type="button">קראו עוד</button>
+  <% elsif donation.dedication_message.present? %>
     <p class="donor-card__message"><%= donation.dedication_message %></p>
     <button class="donor-card__read-more" type="button">קראו עוד</button>
   <% end %>

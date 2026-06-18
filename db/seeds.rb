@@ -36,6 +36,10 @@ orange_garden.donations.create!([
     amount_cents: 18_000,
     recurrence: "one_time",
     display_preference: "first_name",
+    dedication_type: "memory",
+    dedication_honoree: "ילדי ישראל",
+    dedication_recipient_name: "משפחת כהן",
+    dedication_recipient_email: "yael@example.com",
     dedication_message: "לזכרם ולמען ילדי ישראל",
     status: "paid"
   },
@@ -45,6 +49,9 @@ orange_garden.donations.create!([
     amount_cents: 36_000,
     recurrence: "monthly",
     display_preference: "full_name",
+    dedication_type: "honor",
+    dedication_honoree: "משפחת לוי",
+    dedication_recipient_email: "david@example.com",
     dedication_message: "בתקווה לימים טובים",
     status: "pending"
   },
@@ -92,6 +99,9 @@ holiday_meals.donations.create!([
     amount_cents: 12_000,
     recurrence: "one_time",
     display_preference: "full_name",
+    dedication_type: "honor",
+    dedication_honoree: "משפחות בישראל",
+    dedication_recipient_email: "maya@example.com",
     dedication_message: "בשביל עוד משפחה סביב שולחן",
     status: "paid"
   },
