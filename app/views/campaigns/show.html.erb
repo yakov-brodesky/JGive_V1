@@ -1,6 +1,11 @@
 <% content_for :title, @campaign.title %>
 <% orange_garden_campaign = @campaign.title == "הגן הכתום" %>
-<% hero_image_url = orange_garden_campaign ? "/orange-garden/concept.jpg" : @campaign.cover_image_url %>
+<% hero_image_url = @campaign.cover_image_url %>
+<% orange_garden_story_images = {
+  concept: "https://images.unsplash.com/photo-1577086664693-894d8405334a?auto=format&fit=crop&w=1200&q=80",
+  family: "https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=900&q=80",
+  wishes: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=900&q=80"
+} %>
 
 <header class="jgive-header">
   <div class="page-shell jgive-header__inner">
@@ -126,7 +131,7 @@
         </p>
 
         <figure class="story-map story-map--wide">
-          <img src="/orange-garden/concept.jpg" alt="הדמיית השטח כיום ומה שהוא יהפוך להיות">
+          <img src="<%= orange_garden_story_images.fetch(:concept) %>" alt="הדמיית השטח כיום ומה שהוא יהפוך להיות">
           <figcaption>השטח כיום, ומה שהוא יהפוך להיות - תכנון: איזי בלנק אדריכלי נוף</figcaption>
         </figure>
 
@@ -161,11 +166,11 @@
 
         <div class="story-gallery">
           <figure>
-            <img src="/orange-garden/family.jpg" alt="שירי ואריאל ביבס עם עופרי ביבס ובנה">
+            <img src="<%= orange_garden_story_images.fetch(:family) %>" alt="שירי ואריאל ביבס עם עופרי ביבס ובנה">
             <figcaption>שירי ואריאל ביבס עם עופרי ביבס ובנה</figcaption>
           </figure>
           <figure>
-            <img src="/orange-garden/concept.jpg" alt="קיר המשאלות והדמיית הגן הכתום">
+            <img src="<%= orange_garden_story_images.fetch(:wishes) %>" alt="קיר המשאלות והדמיית הגן הכתום">
             <figcaption>מצד שמאל - קיר המשאלות בו כל ילד יוכל לבקש את משאלת ליבו</figcaption>
           </figure>
         </div>
