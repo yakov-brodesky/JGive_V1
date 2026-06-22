@@ -77,15 +77,104 @@ Until then, recurring progress would count the single stored amount, not a
 projected pledge total, to avoid inflating campaign totals with uncharged future
 installments.
 
-### Wiring in a real payment provider (pending → paid)
+### Stripe integration (how I would wire real payments)
 
-1. On submit, create the `pending` donation (as today), then create a provider
-   PaymentIntent/Checkout session and redirect the donor to it.
-2. The provider redirects back on success; a signed **webhook** is the source of
-   truth. On `payment_succeeded`, look up the donation and mark it `paid`
-   (store the transaction id); on failure, keep it `pending`/mark `failed`.
-3. Switch `Donation.counts_toward_progress` to count only `paid` donations so
-   progress reflects settled money.
+This demo stops at a `pending` donation. In production I would use **Stripe Connect**
+so JGive (the platform) can collect donations on behalf of many charities, each with
+its own **Connected Account**.
+
+#### Stripe objects involved
+
+| Stripe object | Role in JGive |
+|---------------|---------------|
+| **Connected Account** (`acct_…`) | One per `Organization`. The charity onboarded via Stripe Connect; funds settle to them. |
+| **Checkout Session** | Hosted payment page Stripe renders. Created server-side after the donor submits the form; donor is redirected to `session.url`. |
+| **PaymentIntent** | Underlying one-time charge. A Checkout Session in `mode: "payment"` creates one automatically. |
+| **Subscription** | For הוראת קבע (recurring). Checkout Session in `mode: "subscription"` creates one. |
+| **Webhook events** | Async source of truth (`checkout.session.completed`, `invoice.paid`, etc.). Never mark a donation `paid` from the redirect alone. |
+
+The object you create at checkout time is a **Checkout Session** (`Stripe::Checkout::Session.create`).
+
+#### Connect model
+
+```
+Donor → JGive (platform account)
+         └─ Connected Account (Organization / charity)
+```
+
+- Each `Organization` would store `stripe_account_id` (and onboarding status).
+- New charities onboard via a **Connect Account Link** (`account_links.create`) — Stripe-hosted KYC/bank setup.
+- Donations route to the campaign's organization connected account using either:
+  - **Destination charges** — charge on the platform, transfer to `destination: org.stripe_account_id` (common for marketplaces), or
+  - **Direct charges** — charge on the connected account (`stripe_account` header); the charity is merchant of record.
+
+JGive can take a platform fee via `application_fee_amount` (one-time) or `application_fee_percent` (subscriptions).
+
+#### One-time donation flow
+
+1. Donor submits the form → `DonationsController#create` saves a **`pending`** `Donation` (as today).
+2. Server creates a **Checkout Session**:
+
+   ```ruby
+   Stripe::Checkout::Session.create(
+     mode: "payment",
+     line_items: [{
+       price_data: {
+         currency: campaign.currency.downcase,   # "ils"
+         unit_amount: donation.amount_cents,
+         product_data: { name: campaign.title }
+       },
+       quantity: 1
+     }],
+     payment_intent_data: {
+       transfer_data: { destination: organization.stripe_account_id },
+       metadata: { donation_id: donation.id }
+     },
+     customer_email: donation.donor_email,
+     success_url: campaign_url(campaign, payment: "success"),
+     cancel_url: campaign_url(campaign, payment: "cancelled"),
+     metadata: { donation_id: donation.id }
+   )
+   ```
+
+3. Redirect the donor to `session.url`.
+4. Stripe sends `checkout.session.completed` (and/or `payment_intent.succeeded`) to a **webhook** endpoint.
+5. Webhook handler finds the donation by `metadata.donation_id`, stores `stripe_checkout_session_id` / `stripe_payment_intent_id`, and sets `status: "paid"`.
+6. Change `Donation.counts_toward_progress` to **only `paid`** donations so abandoned checkouts do not inflate progress.
+
+#### Recurring donations (הוראת קבע)
+
+For monthly standing orders, use Checkout Session with `mode: "subscription"`:
+
+- Create a **Price** (or inline `price_data` with `recurring: { interval: "month" }`).
+- Pass `subscription_data: { metadata: { donation_id: … } }` and route to the connected account.
+- Webhooks: `checkout.session.completed` creates the subscription; **`invoice.paid`** marks each installment/charge as paid.
+- The existing `recurrence` field on `Donation` maps to one-time vs subscription; a `stripe_subscription_id` column would link the pledge to Stripe billing.
+
+#### Database additions (minimal)
+
+```ruby
+# organizations
+add_column :organizations, :stripe_account_id, :string
+add_column :organizations, :stripe_onboarding_complete, :boolean, default: false
+
+# donations
+add_column :donations, :stripe_checkout_session_id, :string
+add_column :donations, :stripe_payment_intent_id, :string
+add_column :donations, :stripe_subscription_id, :string   # recurring only
+add_column :donations, :paid_at, :datetime
+```
+
+#### Rails wiring (sketch)
+
+- `gem "stripe"` + `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` in credentials/env.
+- `StripeWebhooksController` — verify signature, handle events idempotently.
+- `DonationsController#create` — after `@donation.save`, create Checkout Session and `redirect_to session.url, allow_other_host: true`.
+- Optional `CheckoutController#success` — show a thank-you page only; **do not** flip `pending → paid` here (the redirect is not trusted).
+
+#### Why Checkout Session over embedded Elements?
+
+This app is server-rendered ERB with no React. **Stripe Checkout** (via Checkout Session) is the smallest integration: Stripe hosts PCI-sensitive card entry, supports ILS, Connect, and subscriptions, and fits the current redirect-based flow with minimal frontend work.
 
 ## Production deploy (AWS: Kamal + EC2 + RDS)
 
