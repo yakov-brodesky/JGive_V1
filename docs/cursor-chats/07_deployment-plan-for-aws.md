@@ -1142,7 +1142,7 @@ ssh -i .ssh/jgive-deploy.pem ubuntu@54.170.102.6
 
 ```powershell
 cd c:\Users\yakov\Repos\JGive_V1
-$env:DATABASE_URL = "postgres://postgres:pGP4l9oYMsmXLSIcqeBE1kUi@jgive-production.cf0g8e6ai5an.eu-west-1.rds.amazonaws.com:5432/jgive_production"
+$env:DATABASE_URL = "postgres://postgres:YOUR_PASSWORD@jgive-production.cf0g8e6ai5an.eu-west-1.rds.amazonaws.com:5432/jgive_production"
 
 aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin 339712701096.dkr.ecr.eu-west-1.amazonaws.com
 
@@ -1210,7 +1210,7 @@ In PowerShell, from the project folder:
 ```powershell
 cd c:\Users\yakov\Repos\JGive_V1
 
-$env:DATABASE_URL = "postgres://postgres:pGP4l9oYMsmXLSIcqeBE1kUi@jgive-production.cf0g8e6ai5an.eu-west-1.rds.amazonaws.com:5432/jgive_production"
+$env:DATABASE_URL = "postgres://postgres:YOUR_PASSWORD@jgive-production.cf0g8e6ai5an.eu-west-1.rds.amazonaws.com:5432/jgive_production"
 
 aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin 339712701096.dkr.ecr.eu-west-1.amazonaws.com
 
@@ -1271,7 +1271,7 @@ git push
 
 ```powershell
 cd c:\Users\yakov\Repos\JGive_V1
-$env:DATABASE_URL = "postgres://postgres:pGP4l9oYMsmXLSIcqeBE1kUi@jgive-production.cf0g8e6ai5an.eu-west-1.rds.amazonaws.com:5432/jgive_production"
+$env:DATABASE_URL = "postgres://postgres:YOUR_PASSWORD@jgive-production.cf0g8e6ai5an.eu-west-1.rds.amazonaws.com:5432/jgive_production"
 
 aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin 339712701096.dkr.ecr.eu-west-1.amazonaws.com
 
@@ -1320,7 +1320,7 @@ git push
 **2. Re-run deploy** (same command as before — build should be faster with cache):
 
 ```powershell
-$env:DATABASE_URL = "postgres://postgres:pGP4l9oYMsmXLSIcqeBE1kUi@jgive-production.cf0g8e6ai5an.eu-west-1.rds.amazonaws.com:5432/jgive_production"
+$env:DATABASE_URL = "postgres://postgres:YOUR_PASSWORD@jgive-production.cf0g8e6ai5an.eu-west-1.rds.amazonaws.com:5432/jgive_production"
 
 docker run --rm -v //var/run/docker.sock:/var/run/docker.sock -v "${PWD}:/app" -v "${env:USERPROFILE}\.aws:/root/.aws:ro" -w /app -e DATABASE_URL=$env:DATABASE_URL ruby:3.3 bash -lc "apt-get update -qq && apt-get install -y -qq docker.io openssh-client awscli git >/dev/null && bundle install -j4 && export KAMAL_REGISTRY_PASSWORD=`$(aws ecr get-login-password --region eu-west-1) && bin/kamal deploy && bin/kamal app exec 'bin/rails db:seed'"
 ```
@@ -1784,7 +1784,7 @@ You pushed the fix — next step is **redeploy** so EC2 runs the new image with 
 ```powershell
 cd c:\Users\yakov\Repos\JGive_V1
 
-$env:DATABASE_URL = "postgres://postgres:pGP4l9oYMsmXLSIcqeBE1kUi@jgive-production.cf0g8e6ai5an.eu-west-1.rds.amazonaws.com:5432/jgive_production"
+$env:DATABASE_URL = "postgres://postgres:YOUR_PASSWORD@jgive-production.cf0g8e6ai5an.eu-west-1.rds.amazonaws.com:5432/jgive_production"
 
 aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin 339712701096.dkr.ecr.eu-west-1.amazonaws.com
 
